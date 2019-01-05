@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ldc.my.shop.web.admin.mapper.ItemMapper">
+    <sql id="itemColumns">
+        a.id,
+        a.title,
+        a.sell_point AS 'sellPoint',
+        a.price,
+        a.num,
+        a.barcode,
+        a.image,
+        a.cid,
+        a.status,
+        a.created,
+        a.updated,
+        b.name AS 'cname',
+        c.item_desc AS 'itemDesc.itemDesc'
+    </sql>
+
+    <!-- 联查语句 -->
+    <sql id="itemJoins">
+      LEFT JOIN tb_item_cat AS b ON a.cid = b.id
+      LEFT JOIN tb_item_desc AS c on a.id = c.item_id
+    </sql>
+
+    <select id="getById" resultType="Item">
+        SELECT
+        <include refid="itemColumns" />
+        FROM
+        tb_item AS a
+        <include refid="itemJoins" />
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="selectAll" resultType="Item">
+        SELECT
+        <include refid="itemColumns" />
+        FROM
+        tb_item AS a
+        <include refid="itemJoins" />
+    </select>
+
+    <select id="page" resultType="Item">
+        SELECT
+        <include refid="itemColumns" />
+        FROM
+        tb_item AS a
+        <include refid="itemJoins" />
+        <where>
+            <if test="item != null and item.title != null and item.title != ''">
+                AND a.title LIKE CONCAT('%', #{item.title}, '%')
+            </if>
+            <if test="item != null and item.sellPoint != null and item.sellPoint != ''">
+                AND a.sell_point LIKE CONCAT('%', #{item.sellPoint}, '%')
+            </if>
+        </where>
+        ORDER BY updated DESC
+        LIMIT #{start}, #{length}
+    </select>
+
+    <select id="count" resultType="Integer">
+        SELECT COUNT(*)
+        FROM
+        tb_item AS a
+        <where>
+            <if test="title != null and title != ''">
+                AND a.title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="sellPoint != null and sellPoint != ''">
+                AND a.sell_point LIKE CONCAT('%', #{sellPoint}, '%')
+            </if>
+        </where>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO tb_item (
+            id,
+            title,
+            sell_point,
+            price,
+            num,
+            barcode,
+            image,
+            cid,
+            status,
+            created,
+            updated
+        )
+        VALUES
+        (
+            #{id},
+            #{title},
+            #{sellPoint},
+            #{price},
+            #{num},
+            #{barcode},
+            #{image},
+            #{cid},
+            #{status},
+            #{created},
+            #{updated}
+        );
+    </insert>
+
+    <update id="update">
+        UPDATE
+            tb_item
+        SET
+            title = #{title},
+            sell_point = #{sellPoint},
+            price = #{price},
+            num = #{num},
+            barcode = #{barcode},
+            image = #{image},
+            cid = #{cid},
+            status = #{status},
+            created = #{created},
+            updated = #{updated}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM tb_item WHERE id = #{id}
+    </delete>
+</mapper>
